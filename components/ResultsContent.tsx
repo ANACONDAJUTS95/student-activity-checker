@@ -24,24 +24,45 @@ export function ResultsContent({ scoringInstructions, totalScore, files }: Resul
   const [isProcessing, setIsProcessing] = useState(true);
 
   useEffect(() => {
+    const processFileWithRetry = async (file: File, rubrics: any[], retries = 2): Promise<FileScore> => {
+      try {
+        return await scoreFile(file, rubrics);
+      } catch (error) {
+        if (retries > 0 && error instanceof Error && error.message.includes('NetworkError')) {
+          // Wait for 2 seconds before retrying
+          await new Promise(resolve => setTimeout(resolve, 2000));
+          return processFileWithRetry(file, rubrics, retries - 1);
+        }
+        return {
+          fileName: file.name,
+          totalScore: 0,
+          rubricScores: [],
+          error: error instanceof Error ? error.message : 'Failed to process file'
+        };
+      }
+    };
+
     const processFiles = async () => {
       try {
+        setIsProcessing(true);
+        setFileScores([]); // Reset scores at the start
         const rubrics = parseRubrics(scoringInstructions);
-        const scores = await Promise.all(
-          files.map(async (file) => {
-            try {
-              return await scoreFile(file, rubrics);
-            } catch (error) {
-              return {
-                fileName: file.name,
-                totalScore: 0,
-                rubricScores: [],
-                error: error instanceof Error ? error.message : 'Failed to process file'
-              };
-            }
-          })
-        );
-        setFileScores(scores);
+        const results: FileScore[] = [];
+
+        // Process files sequentially with delays between each
+        for (let i = 0; i < files.length; i++) {
+          // Process file with retry mechanism
+          const result = await processFileWithRetry(files[i], rubrics);
+          results.push(result);
+          
+          // Add delay between files
+          if (i < files.length - 1) {
+            await new Promise(resolve => setTimeout(resolve, 1500));
+          }
+        }
+
+        // Set all scores at once after all files are processed
+        setFileScores(results);
       } catch (error) {
         console.error('Error processing files:', error);
       } finally {
@@ -49,7 +70,9 @@ export function ResultsContent({ scoringInstructions, totalScore, files }: Resul
       }
     };
 
-    processFiles();
+    if (files.length > 0) {
+      processFiles();
+    }
   }, [files, scoringInstructions]);
 
   return (

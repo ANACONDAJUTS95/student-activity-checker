@@ -93,9 +93,11 @@ function calculateScore(text: string, rubricItem: RubricItem): {
     contentWords.some(word => word.includes(keyword))
   ).length;
   
-  // Calculate score based on keyword matches
+  // Calculate score based on keyword matches with a minimum of 75%
   const matchRatio = matches / keywords.length;
-  const score = Math.round(points * matchRatio);
+  // Adjust the ratio to start from 0.75 (75%) and go up to 1.0 (100%)
+  const adjustedRatio = 0.75 + (matchRatio * 0.25);
+  const score = Math.round(points * adjustedRatio);
   
   // Generate feedback
   let feedback = '';
@@ -117,16 +119,25 @@ export async function scoreFile(
   rubrics: RubricItem[]
 ): Promise<ScoringResult> {
   try {
-    const content = await extractTextFromFile(file);
-    const rubricScores = rubrics.map(rubric => {
-      const { score, feedback } = calculateScore(content, rubric);
-      return {
-        category: rubric.category,
-        score,
-        maxPoints: rubric.points,
-        feedback
-      };
-    });
+    const fileType = file.name.toLowerCase().split('.').pop();
+    const isImage = ['jpg', 'jpeg', 'png'].includes(fileType || '');
+
+    let rubricScores;
+    if (isImage) {
+      const { scoreImage } = await import('./imageProcessing');
+      rubricScores = await scoreImage(file, rubrics);
+    } else {
+      const content = await extractTextFromFile(file);
+      rubricScores = rubrics.map(rubric => {
+        const { score, feedback } = calculateScore(content, rubric);
+        return {
+          category: rubric.category,
+          score,
+          maxPoints: rubric.points,
+          feedback
+        };
+      });
+    }
 
     const totalScore = rubricScores.reduce((sum, item) => sum + item.score, 0);
 

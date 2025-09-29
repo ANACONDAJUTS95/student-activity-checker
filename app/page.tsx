@@ -69,7 +69,11 @@ export default function Home() {
       {/* Upload Area */}
       {!showResults && !showScoring && (
         <>
-          <UploadContent onFileSelect={setSelectedFiles} selectedFiles={selectedFiles} />
+          <UploadContent 
+            onFileSelect={setSelectedFiles} 
+            selectedFiles={selectedFiles}
+            mode={activeTab as 'file' | 'images'} 
+          />
           {/* Buttons */}
           <div className="flex flex-row w-full items-center justify-end">
             <button 

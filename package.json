@@ -9,6 +9,8 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@tensorflow-models/mobilenet": "^2.1.1",
+    "@tensorflow/tfjs": "^4.22.0",
     "@types/pdf-parse": "^1.1.5",
     "@types/pdfjs-dist": "^2.10.377",
     "canvas": "^3.2.0",
@@ -19,7 +21,8 @@
     "pdfjs-dist": "^3.11.174",
     "react": "19.1.0",
     "react-dom": "19.1.0",
-    "react-dropzone": "^14.3.8"
+    "react-dropzone": "^14.3.8",
+    "tesseract.js": "^6.0.1"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",

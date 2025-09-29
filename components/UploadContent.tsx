@@ -4,9 +4,10 @@ import { useDropzone } from 'react-dropzone';
 interface UploadContentProps {
   onFileSelect: (files: File[]) => void;
   selectedFiles: File[];
+  mode: 'file' | 'images';
 }
 
-export function UploadContent({ onFileSelect, selectedFiles }: UploadContentProps) {
+export function UploadContent({ onFileSelect, selectedFiles, mode }: UploadContentProps) {
   const [error, setError] = useState<string>('');
 
   const onDrop = useCallback((acceptedFiles: File[], rejectedFiles: any[]) => {
@@ -16,26 +17,39 @@ export function UploadContent({ onFileSelect, selectedFiles }: UploadContentProp
         .map(rejected => rejected.file)
         .filter(file => {
           const extension = file.name.toLowerCase().split('.').pop();
-          return ['doc', 'docx', 'pdf'].includes(extension);
+          return mode === 'file' 
+            ? ['doc', 'docx', 'pdf'].includes(extension)
+            : ['jpg', 'jpeg', 'png'].includes(extension);
         });
 
       if (validFiles.length > 0) {
         // If some files have correct extensions but were rejected, accept them
-        onFileSelect([...selectedFiles, ...validFiles]);
+        // Filter out duplicates based on file name
+        const newFiles = [...validFiles].filter(
+          newFile => !selectedFiles.some(existing => existing.name === newFile.name)
+        );
+        onFileSelect([...selectedFiles, ...newFiles]);
         setError('');
         return;
       }
-      setError('Please upload only .doc, .docx, or .pdf files');
+      setError(mode === 'file' 
+        ? 'Please upload only .doc, .docx, or .pdf files'
+        : 'Please upload only .jpg, .jpeg, or .png files'
+      );
       return;
     }
     
-    onFileSelect([...selectedFiles, ...acceptedFiles]);
+    // Filter out duplicates based on file name
+    const newFiles = [...acceptedFiles].filter(
+      newFile => !selectedFiles.some(existing => existing.name === newFile.name)
+    );
+    onFileSelect([...selectedFiles, ...newFiles]);
     setError('');
-  }, [onFileSelect, selectedFiles]);
+  }, [onFileSelect, selectedFiles, mode]);
 
   const { getRootProps, getInputProps, isDragActive, open } = useDropzone({
     onDrop,
-    accept: {
+    accept: mode === 'file' ? {
       'application/pdf': ['.pdf'],
       'application/msword': ['.doc'],
       'application/vnd.openxmlformats-officedocument.wordprocessingml.document': ['.docx'],
@@ -43,6 +57,9 @@ export function UploadContent({ onFileSelect, selectedFiles }: UploadContentProp
       'application/x-pdf': ['.pdf'],
       'application/vnd.ms-word': ['.doc'],
       'application/x-msword': ['.doc']
+    } : {
+      'image/jpeg': ['.jpg', '.jpeg'],
+      'image/png': ['.png']
     },
     noClick: true, // This prevents double-click events when using the Browse button
   });
@@ -104,7 +121,9 @@ export function UploadContent({ onFileSelect, selectedFiles }: UploadContentProp
           >
             Browse Files
           </button>
-          <p className="text-sm text-black/40">Supported files: .doc, .docx, .pdf</p>
+          <p className="text-sm text-black/40">
+            Supported files: {mode === 'file' ? '.doc, .docx, .pdf' : '.jpg, .jpeg, .png'}
+          </p>
         </>
       )}
       {error && (
