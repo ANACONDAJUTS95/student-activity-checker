@@ -5,6 +5,7 @@ interface ResultsContentProps {
   scoringInstructions: string;
   totalScore: number;
   files: File[];
+  onProcessingStateChange?: (isProcessing: boolean) => void;
 }
 
 interface FileScore {
@@ -19,11 +20,16 @@ interface FileScore {
   error?: string;
 }
 
-export function ResultsContent({ scoringInstructions, totalScore, files }: ResultsContentProps) {
+export function ResultsContent({ scoringInstructions, totalScore, files, onProcessingStateChange }: ResultsContentProps) {
   const [fileScores, setFileScores] = useState<FileScore[]>([]);
   const [isProcessing, setIsProcessing] = useState(true);
   const [progress, setProgress] = useState(0);
   const [currentFile, setCurrentFile] = useState<string>('');
+
+  // Notify parent component of processing state changes
+  useEffect(() => {
+    onProcessingStateChange?.(isProcessing);
+  }, [isProcessing, onProcessingStateChange]);
 
   useEffect(() => {
     const processFileWithRetry = async (file: File, rubrics: any[], retries = 2): Promise<FileScore> => {
