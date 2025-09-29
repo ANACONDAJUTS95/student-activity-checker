@@ -1,6 +1,7 @@
 'use client'
 
 import { ResultsContent } from "@/components/ResultsContent";
+import { ScoringInstructions } from "@/components/ScoringInstructions";
 import { UploadContent } from "@/components/UploadContent";
 import { useState } from "react";
 
@@ -8,16 +9,32 @@ export default function Home() {
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [activeTab, setActiveTab] = useState('file');
   const [showResults, setShowResults] = useState(false);
+  const [showScoring, setShowScoring] = useState(false);
+  const [scoringInstructions, setScoringInstructions] = useState('');
+  const [totalScore, setTotalScore] = useState(0);
 
   const handleCancel = () => {
     setSelectedFiles([]);
     setShowResults(false);
+    setShowScoring(false);
+    setScoringInstructions('');
+    setTotalScore(0);
   };
 
   const handleNext = () => {
     if (selectedFiles.length > 0) {
-      setShowResults(true);
+      setShowScoring(true);
     }
+  };
+
+  const handleBack = () => {
+    setShowScoring(false);
+  };
+
+  const handleScoringSubmit = (instructions: string, score: number) => {
+    setScoringInstructions(instructions);
+    setTotalScore(score);
+    setShowResults(true);
   };
 
   return (
@@ -50,7 +67,7 @@ export default function Home() {
         </div>
       </div>
       {/* Upload Area */}
-      {!showResults && (
+      {!showResults && !showScoring && (
         <>
           <UploadContent onFileSelect={setSelectedFiles} selectedFiles={selectedFiles} />
           {/* Buttons */}
@@ -74,8 +91,18 @@ export default function Home() {
           </div>
         </>
       )}
+      {/* Scoring Instructions */}
+      {!showResults && showScoring && (
+        <ScoringInstructions onSubmit={handleScoringSubmit} onBack={handleBack} />
+      )}
       {/* Results Content */}
-      {showResults && <ResultsContent />}
+      {showResults && (
+        <ResultsContent 
+          scoringInstructions={scoringInstructions} 
+          totalScore={totalScore} 
+          files={selectedFiles}
+        />
+      )}
     </div>
   );
 }
