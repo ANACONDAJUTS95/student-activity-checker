@@ -22,6 +22,8 @@ interface FileScore {
 export function ResultsContent({ scoringInstructions, totalScore, files }: ResultsContentProps) {
   const [fileScores, setFileScores] = useState<FileScore[]>([]);
   const [isProcessing, setIsProcessing] = useState(true);
+  const [progress, setProgress] = useState(0);
+  const [currentFile, setCurrentFile] = useState<string>('');
 
   useEffect(() => {
     const processFileWithRetry = async (file: File, rubrics: any[], retries = 2): Promise<FileScore> => {
@@ -51,6 +53,11 @@ export function ResultsContent({ scoringInstructions, totalScore, files }: Resul
 
         // Process files sequentially with delays between each
         for (let i = 0; i < files.length; i++) {
+          // Update progress and current file
+          const currentProgress = Math.round(((i) / files.length) * 100);
+          setProgress(currentProgress);
+          setCurrentFile(files[i].name);
+          
           // Process file with retry mechanism
           const result = await processFileWithRetry(files[i], rubrics);
           results.push(result);
@@ -60,6 +67,9 @@ export function ResultsContent({ scoringInstructions, totalScore, files }: Resul
             await new Promise(resolve => setTimeout(resolve, 1500));
           }
         }
+        
+        // Set final progress
+        setProgress(100);
 
         // Set all scores at once after all files are processed
         setFileScores(results);
@@ -92,7 +102,25 @@ export function ResultsContent({ scoringInstructions, totalScore, files }: Resul
         <div className="flex flex-col items-center justify-center w-full p-6 border-2 rounded-lg border-black/20 gap-5 bg-[#DFE8FF]/40">
           {isProcessing ? (
             <div className="w-full p-4 bg-white border border-black/20 rounded-lg shadow-sm">
-              <p className="text-black/70">Processing files...</p>
+              <div className="flex flex-col gap-3">
+                <div className="flex items-center gap-3">
+                  <div className="w-5 h-5 border-2 border-[#0C8CE9] border-t-transparent rounded-full animate-spin"></div>
+                  <p className="text-black/70">Processing files...</p>
+                </div>
+                
+                <div className="flex flex-col gap-2">
+                  <div className="w-full bg-gray-200 rounded-full h-2.5">
+                    <div 
+                      className="bg-[#0C8CE9] h-2.5 rounded-full transition-all duration-300 ease-in-out"
+                      style={{ width: `${progress}%` }}
+                    ></div>
+                  </div>
+                  <div className="flex justify-between text-sm text-black/60">
+                    <span>{currentFile}</span>
+                    <span>{progress}%</span>
+                  </div>
+                </div>
+              </div>
             </div>
           ) : (
             fileScores.map((result, index) => (
