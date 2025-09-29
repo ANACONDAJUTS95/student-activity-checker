@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { parseRubrics, scoreFile, RubricItem } from '@/utils/scoring';
+import { parseRubrics, scoreFile } from '@/utils/scoring';
 
 interface ResultsContentProps {
   scoringInstructions: string;
@@ -24,7 +24,7 @@ export function ResultsContent({ scoringInstructions, totalScore, files }: Resul
   const [isProcessing, setIsProcessing] = useState(true);
 
   useEffect(() => {
-    const processFileWithRetry = async (file: File, rubrics: RubricItem[], retries = 2): Promise<FileScore> => {
+    const processFileWithRetry = async (file: File, rubrics: any[], retries = 2): Promise<FileScore> => {
       try {
         return await scoreFile(file, rubrics);
       } catch (error) {

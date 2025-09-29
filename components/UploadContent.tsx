@@ -1,5 +1,5 @@
 import { useCallback, useState } from 'react';
-import { useDropzone, FileRejection } from 'react-dropzone';
+import { useDropzone } from 'react-dropzone';
 
 interface UploadContentProps {
   onFileSelect: (files: File[]) => void;
@@ -10,17 +10,16 @@ interface UploadContentProps {
 export function UploadContent({ onFileSelect, selectedFiles, mode }: UploadContentProps) {
   const [error, setError] = useState<string>('');
 
-  const onDrop = useCallback((acceptedFiles: File[], rejectedFiles: FileRejection[]) => {
+  const onDrop = useCallback((acceptedFiles: File[], rejectedFiles: any[]) => {
     if (rejectedFiles.length > 0) {
       // Check file extensions manually as a backup
       const validFiles = rejectedFiles
         .map(rejected => rejected.file)
         .filter(file => {
-          const extension = file.name.toLowerCase().split('.').pop() || '';
-          const allowedExtensions = mode === 'file' 
-            ? new Set(['doc', 'docx', 'pdf'])
-            : new Set(['jpg', 'jpeg', 'png']);
-          return allowedExtensions.has(extension);
+          const extension = file.name.toLowerCase().split('.').pop();
+          return mode === 'file' 
+            ? ['doc', 'docx', 'pdf'].includes(extension)
+            : ['jpg', 'jpeg', 'png'].includes(extension);
         });
 
       if (validFiles.length > 0) {
