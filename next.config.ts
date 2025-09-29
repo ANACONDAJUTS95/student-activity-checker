@@ -3,6 +3,7 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   output: 'export',
   basePath: '/student-activity-checker',
+  assetPrefix: '/student-activity-checker/',
   images: {
     unoptimized: true,
   },
