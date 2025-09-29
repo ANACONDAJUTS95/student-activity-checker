@@ -5,7 +5,7 @@ import { setupPdfWorker } from './pdfjs-init';
 // Initialize PDF.js worker
 setupPdfWorker();
 
-interface RubricItem {
+export interface RubricItem {
   category: string;
   points: number;
   description: string;
