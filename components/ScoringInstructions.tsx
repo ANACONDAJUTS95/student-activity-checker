@@ -21,10 +21,17 @@ export function ScoringInstructions({ onSubmit, onBack }: ScoringInstructionsPro
       
       <div className="flex flex-col gap-4">
         <label className="font-medium text-black">Rubrics</label>
+        <div className="p-3 bg-blue-50 rounded-lg border border-blue-200 text-sm">
+          <p className="font-medium text-black mb-1">Format each rubric on a new line:</p>
+          <p className="text-black/70">• Category Name (points) - Description</p>
+          <p className="text-black/60 text-xs mt-2">Example:</p>
+          <p className="text-black/60 text-xs">Thesis Statement (10 points) - Clear and arguable thesis</p>
+          <p className="text-black/60 text-xs">Evidence (15 pts): Supporting facts and examples</p>
+        </div>
         <textarea 
           value={instructions}
           onChange={(e) => setInstructions(e.target.value)}
-          placeholder="Enter detailed scoring instructions and rubrics here..."
+          placeholder="• Thesis Statement (10 points) - Clear and arguable thesis&#10;• Evidence (15 points) - Supporting facts and examples&#10;• Organization (10 points) - Logical structure and flow&#10;• Grammar (10 points) - Proper spelling and grammar&#10;• Conclusion (5 points) - Effective summary"
           className="w-full h-[200px] p-4 border border-black/20 rounded-lg focus:outline-none focus:border-[#0C8CE9] resize-none text-black"
         />
       </div>
